@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.ictfusion</groupId>
+    <artifactId>internal-java-poc</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <properties>
+      <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/</sonar.coverage.jacoco.xmlReportPaths>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.mockito</groupId>
+          <artifactId>mockito-core</artifactId>
+          <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <properties>
+        <!-- AWS ECR and Docker image details-->
+        <docker.image.prefix>${aws.account.id}.dkr.ecr.eu-west-1.amazonaws.com</docker.image.prefix>
+        <docker.image.name>${project.artifactId}</docker.image.name>
+        <docker.file>Dockerfile</docker.file>
+    </properties>
+
+    <build>
+        <plugins>
+                <plugin>
+                    <groupId>com.spotify</groupId>
+                    <artifactId>dockerfile-maven-plugin</artifactId>
+                    <version>1.4.10</version>
+                    <executions>
+                        <execution>
+                            <id>tag-latest</id>
+                            <goals>
+                                <goal>build</goal>
+                                <goal>tag</goal>
+                                <goal>push</goal>
+                            </goals>
+                            <configuration>
+                                <tag>latest</tag>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>tag-version</id>
+                            <goals>
+                                <goal>build</goal>
+                                <goal>tag</goal>
+                                <goal>push</goal>
+                            </goals>
+                            <configuration>
+                                <tag>${project.version}</tag>
+                            </configuration>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <useMavenSettingsForAuth>true</useMavenSettingsForAuth>
+                        <repository>${docker.image.prefix}/${docker.image.name}</repository>
+                        <tag>${git.commit.id.describe}</tag>
+                        <dockerfile>${docker.file}</dockerfile>
+                    </configuration>
+                </plugin>
+        </plugins>
+    </build>
+</project>
